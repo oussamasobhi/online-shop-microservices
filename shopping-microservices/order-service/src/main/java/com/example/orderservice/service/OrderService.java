@@ -21,8 +21,8 @@ import java.util.UUID;
 @Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final WebClient webClient;
-    public void  placeorder(OrderRequest orderRequest){
+    private final WebClient.Builder webClientbuilder;
+    public String  placeorder(OrderRequest orderRequest){
         Order order=new Order();
         order.setOrdernNumber(UUID.randomUUID().toString());
         List<OrderLineItems> orderLineItems = orderRequest.getOrderLineItemsDtos()
@@ -36,8 +36,8 @@ public class OrderService {
                 .map(OrderLineItems::getSkuCode).toList();
 
         //check if product is in inventory
-        InventoryResponse[] inventoryResponses= webClient.get()
-                .uri("http://localhost:8082/api/inventory",
+        InventoryResponse[] inventoryResponses= webClientbuilder.build().get()
+                .uri("http://inventory-service/api/inventory",
                         UriBuilder-> UriBuilder.queryParam("skuCode",skucodes).build())
                         .retrieve()
                                 .bodyToMono(InventoryResponse[].class)
@@ -45,8 +45,10 @@ public class OrderService {
 
         boolean allproductsinStock= Arrays.stream(inventoryResponses).allMatch(InventoryResponse::isIsinstock);
 
-        if(allproductsinStock)
+        if(allproductsinStock) {
             orderRepository.save(order);
+            return "order places successuully";
+        }
         else
             throw new IllegalArgumentException("product is not in stock");
 

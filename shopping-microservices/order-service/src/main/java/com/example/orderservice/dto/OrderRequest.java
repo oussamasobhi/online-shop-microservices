@@ -3,6 +3,7 @@ package com.example.orderservice.dto;
 import com.example.orderservice.model.OrderLineItems;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
